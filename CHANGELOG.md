@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Atomic, revision-checked cross-Tenant ingress grants/revokes across CLI, REST, gRPC and Host MCP, preserving all other policy fields and reporting enforcement separately from TCP tests. No network stack or table migration change.
+
 - Native network Tenant creation through CLI, REST, gRPC and Host MCP, with Provider-derived membership/source queries and an authenticated capability endpoint. The existing required NIC Guard runs before first Start; failed cleanup reports the retained stopped instance. The atomic cross-Tenant policy capability remains disabled.
 
 - **The dispatch row names the change request its run submitted** (#3001). `SubmitTrackerChange` records the opened pull / merge request on the `tracker_dispatches` row that started the run (matched by run id), and `ListTrackerDispatches` / `TrackerDispatch` expose it as `change_url` and `change_number` — empty / zero until the run submits one. A control plane mirroring the listing can link the change without reading the provider itself. A run the dispatcher did not start has no row to annotate; the submit succeeds as before and the miss is logged.
@@ -20,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **A narrow control-plane allow-list no longer cuts a box off from the host gateway** (#2994, part 1). Policies received through the control-plane policy sync are now stored with the `ALLOW_LIST_ONLY` egress preset, as the locally authored default is, so the host adds its own bridge gateway (DNS resolver, model gateway) to the allow-set. Before, a cloud-authored list that omitted the gateway left an enforced box without DNS. Synced policies still store `egress_mode` unset (follow `mode`): the synced message has no egress-mode field yet, so a separate egress soak mode cannot be driven from the sync path until that field is added upstream (#2976).
 
 ### Security
+
+- Scoped policy writes require network-policy:write, including existing full-policy and deny/signature mutation paths; legacy unrestricted admin tokens retain compatibility.
 
 - Non-admin new local Linux LXC creates use reserved account-scoped native membership to prevent username collisions with administrator-shared networks. Shared assignment and Cloud attribution require administrator authorization; existing Boxes are unchanged.
 

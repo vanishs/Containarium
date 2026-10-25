@@ -2246,6 +2246,12 @@ skipAppHosting:
 			}
 			return nativeTenantGuardReady(tenantGuardStatusToProto(tenantGuard.Status()), time.Now())
 		}
+		npServer.tenantStoreDurable = func() bool { return policyStoreDurable.Load() }
+		if tenantGuard != nil && containerServer.nativeTenantLocalLXC() {
+			npServer.tenantGuardRead = func() *pb.GuardStatus { return tenantGuardStatusToProto(tenantGuard.Status()) }
+			npServer.tenantGuardReconcile = tenantGuard.ReconcileOnce
+		}
+		networkServer.atomicTenantAccessReady = npServer.atomicTenantAccessAvailable
 		networkServer.nativeTenantReady = ready
 		containerServer.nativeTenantReady = ready
 	}
